@@ -55,7 +55,7 @@ Th1.cells.OLP<-Th1.cells.Markers[Th1.cells.Markers$p_val_adj < 0.05 & Th1.cells.
 write.csv(Th1.cells.OLP,file = "./Th1.cells.OLP.csv")
 
 
-Group_DEGs <- FindMarkers(seurat.integrated, ident.1 = 'Healthy', ident.2 = 'OLP',test.use = "LR")
+Group_DEGs <- FindMarkers(seurat.integrated, ident.1 = 'Healthy', ident.2 = 'OLP',test.use = "MAST")
 
 Group_DEGs.Healthy<-Group_DEGs[Group_DEGs$p_val_adj < 0.05 & Group_DEGs$avg_log2FC > 0.5,]
 Group_DEGs.OLP<-Group_DEGs[Group_DEGs$p_val_adj < 0.05 & Group_DEGs$avg_log2FC < -0.5,]
