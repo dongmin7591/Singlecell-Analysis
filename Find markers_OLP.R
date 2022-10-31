@@ -60,6 +60,4 @@ Group_DEGs <- FindMarkers(seurat.integrated, ident.1 = 'Healthy', ident.2 = 'OLP
 Group_DEGs.Healthy<-Group_DEGs[Group_DEGs$p_val_adj < 0.05 & Group_DEGs$avg_log2FC > 0.5,]
 Group_DEGs.OLP<-Group_DEGs[Group_DEGs$p_val_adj < 0.05 & Group_DEGs$avg_log2FC < -0.5,]
 
-library(DESeq2)
-
 
