@@ -74,7 +74,7 @@ output.asin
 
 props.covid <- getTransformedProps(clusters=seurat.integrated$singler_labels, sample=seurat.integrated$Patient,
                                    transform="logit")
-
+  
 write.csv(output.logit, file = "./propeller.csv")
 
 par(mfrow=c(1,1))
