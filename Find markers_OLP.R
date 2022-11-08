@@ -63,3 +63,4 @@ Group_DEGs.OLP<-Group_DEGs[Group_DEGs$p_val_adj < 0.05 & Group_DEGs$avg_log2FC <
 library(DESeq2)
 
 
+saveRDS(seurat.integrated,file = "./Final.seurat.integrated.rds")
