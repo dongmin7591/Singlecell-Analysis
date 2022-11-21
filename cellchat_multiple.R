@@ -1,15 +1,14 @@
-
 #> Merge the following slots: 'data.signaling','net', 'netP','meta', 'idents', 'var.features' , 'DB', and 'LR'.
-cellchat
 
+df <- SplitObject(df, split.by = "Group")
 
-;
+##
 df<-seurat.integrated
 
 DefaultAssay(df) <- 'RNA'
 
 data.input <- GetAssayData(df$OLP, assay = "RNA", slot = "data") # normalized data matrix
-Idents(df$OLP)<-df$OLP@meta.data$singler_labels_main
+Idents(df$OLP)<-df$OLP@meta.data$singler_labels
 labels <- Idents(df$OLP)
 Group<-df$OLP$Group
 meta <- data.frame(group = Group, row.names = names(labels),labels=labels) # create a dataframe of the cell labels
@@ -76,7 +75,7 @@ cellchat.OLP<-cellchat
 
 
 data.input <- GetAssayData(df$Healthy, assay = "RNA", slot = "data") # normalized data matrix
-Idents(df$Healthy)<-df$Healthy@meta.data$singler_labels_main
+Idents(df$Healthy)<-df$Healthy@meta.data$singler_labels
 labels <- Idents(df$Healthy)
 Group<-df$Healthy$Group
 meta <- data.frame(group = Group, row.names = names(labels),labels=labels) # create a dataframe of the cell labels
@@ -149,7 +148,7 @@ gg2 <- netVisual_heatmap(cellchat, measure = "weight")
 #> Do heatmap based on a merged object
 gg1 + gg2
 
-png("./png/cellchat_compareInteractions_main.png",width=2000,height=2500,res=500)
+png("./png/cellchat_netVisual_heatmap_sub.png",width=5500,height=4000,res=500)
 dev.off()
 
 weight.max <- getMaxWeight(object.list, attribute = c("idents","count"))
@@ -159,10 +158,18 @@ for (i in 1:length(object.list)) {
 } 
 
 
-
+par(mfrow = c(1,2), xpd=TRUE)
+netVisual_diffInteraction(cellchat, weight.scale = T)
+netVisual_diffInteraction(cellchat, weight.scale = T, measure = "weight")
 
 # Compare the major sources and targets in 2D space.
 
+# Install
+install.packages("wesanderson")
+# Load
+library(wesanderson)
+
+color<-colors()[c(153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153,153)]
 
 num.link <- sapply(object.list, function(x) {rowSums(x@net$count) + colSums(x@net$count)-diag(x@net$count)})
 weight.MinMax <- c(min(num.link), max(num.link)) # control the dot size in the different datasets
@@ -173,13 +180,17 @@ for (i in 1:length(object.list)) {
 }
 
 for (i in 1:length(object.list)) {
-  gg[[i]] <- netAnalysis_signalingRole_scatter(object.list[[i]], title = names(object.list)[i], weight.MinMax = weight.MinMax)
+  gg[[i]] <- netAnalysis_signalingRole_scatter(object.list[[i]], title = names(object.list)[i], weight.MinMax = weight.MinMax,color.use = color)+ scale_y_continuous(limits = c(0,6)) + scale_x_continuous(limits = c(0,6))
+  
 }
 #> Signaling role analysis on the aggregated cell-cell communication network from all signaling pathways
 #> Signaling role analysis on the aggregated cell-cell communication network from all signaling pathways
 patchwork::wrap_plots(plots = gg)
 
-png("./png/cellchat.rankNet.png",width=4000,height=4000,res=500)
+
+
+
+png("./png/cellchat.rankNet.sub.png",width=3000,height=2000,res=300)
 dev.off()
 
 
@@ -197,7 +208,17 @@ gg2 <- netAnalysis_signalingChanges_scatter(cellchat, idents.use = "Monocytes", 
 #> The following `from` values were not present in `x`: 0, -1
 gg3<- netAnalysis_signalingChanges_scatter(cellchat, idents.use = "CD8+ T cells", comparison = c(1, 2),signaling.exclude = c("MIF"))
 
-gg1 <- rankNet(cellchat, mode = "comparison", stacked = T, do.stat = TRUE)
-gg2 <- rankNet(cellchat, mode = "comparison", stacked = F, do.stat = TRUE)
+gg1 <- rankNet(cellchat, mode = "comparison", stacked = T, do.stat = TRUE,cutoff.pvalue = 0.05)
+gg2 <- rankNet(cellchat, mode = "comparison", stacked = F, do.stat = TRUE,cutoff.pvalue = 0.05)
 gg1 + gg2
+
+
+#cellchat broad
+saveRDS(cellchat_broad, file = "./cellchat_broad.rds")
+saveRDS(cellchat_Healthy_broad, file = "./cellchat_Healthy_broad.rds")
+saveRDS(cellchat_OLP_broad, file = "./cellchat_OLP_broad.rds")
+#cellchat subclass
+saveRDS(cellchat_OLP_sub, file = "./cellchat_OLP_sub.rds")
+saveRDS(cellchat_Healthy_sub, file = "./cellchat_Healthy_sub.rds")
+saveRDS(cellchat_sub, file = "./cellchat_sub.rds")
 
