@@ -399,32 +399,36 @@ results <- SingleR(test = as.SingleCellExperiment(data), ref = ref, labels =
                      ref$label.fine,assay.type.test=1)
 table(results$labels)
 
+# Basophils,Neutrophils 제거
+
+data<-subset(data,label.main!="Basophils" & label.main!= "Neutrophils"& label.fine!="Low-density basophils" & label.fine!= "Low-density neutrophils")
+table(seurat.integrated@meta.data$label.fine)
+# label.fine
+data<-subset(data,label.fine!="Low-density basophils" & label.fine!= "Low-density neutrophils")
+
+
 plotScoreHeatmap(results)
 #########################
 # Annotation diagnostics
 #########################
 plotDeltaDistribution(results, ncol = 3)
+  summary(is.na(results$pruned.labels))
 
-data$pruned.fine<- results$pruned.labels
-data<-subset(data,pruned.fine!="NA")
-summary(is.na(data$pruned.fine))
+plotDeltaDistribution(results,size = 0.5)
+png("./2nd/plotScoreHeatmap.fine.png",width=6000,height=3500,res=500)
+dev.off()
+data$label.fine<- results$pruned.labels
+summary(is.na(data$label.fine))
+data<-subset(data,label.fine!="NA")
+summary(is.na(data$label.fine))
 
-table(data$pruned.fine)
-
-data$label.fine<- results$labels
+seurat.integrated<-data
 
 
-data$pruned.labels<- results$pruned.labels
-data<-subset(data,pruned.labels!="TRUE")
+
 
 DimPlot(data, reduction = 'umap', group.by = 'label.main', label = F,raster = FALSE )
 
-# Basophils,Neutrophils 제거
-
-data<-subset(data,label.main!="Basophils" & label.main!= "Neutrophils"& label.fine!="Low-density basophils" & label.fine!= "Low-density neutrophils")
-table(test@meta.data$label.main)
-# label.fine
-data<-subset(data,label.fine!="Low-density basophils" & label.fine!= "Low-density neutrophils")
 
 ref$label.main
 
