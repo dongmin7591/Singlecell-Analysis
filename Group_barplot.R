@@ -1,6 +1,6 @@
 bp<-read.csv(file = "./InterCellDB/Barplot/6955.csv")
 
-#1. 임상정보 High, Low 두개의 데이터프레임 만들기
+
 q<-which(bp$sending%in%"Non classical monocytes")
 p<-which(bp$sending%in%"Myeloid dendritic cells")
 
