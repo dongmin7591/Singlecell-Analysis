@@ -151,7 +151,7 @@ if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
 BiocManager::install("glmGamPoi")
-
+merged_seurat_filtered <- SCTransform(merged_seurat_filtered, vars.to.regress = "mitoPercent", verbose = FALSE,conserve.memory = TRUE)
 # perform standard workflow steps to figure out if we see any batch effects --------
 merged_seurat_filtered <-  NormalizeData(object = merged_seurat_filtered, normalization.method = "LogNormalize", scale.factor = 10000)
 merged_seurat_filtered <- FindVariableFeatures(object = merged_seurat_filtered, selection.method = "vst", nfeatures = 2000)
