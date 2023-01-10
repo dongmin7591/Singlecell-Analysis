@@ -1,0 +1,114 @@
+#Data load
+metadataOrganoids<-read.csv(file = "./GSE164403_metadataOrganoids.csv")
+metadataTissue<-read.csv(file = "./GSE164403_metadataTissue.csv")
+
+organoidcells<-read.csv(file = "./GSE164403_organoidcells.csv")
+tissuecells<-read.csv(file = "./GSE164403_tissuecells.csv")
+
+metadataOrganoids<-metadataOrganoids[-1]
+metadataTissue<-metadataTissue[-1]
+
+row.names(organoidcells)<-organoidcells$X
+organoidcells<-organoidcells[-1]
+
+row.names(tissuecells)<-tissuecells$X
+tissuecells<-tissuecells[-1]
+
+
+#1. Tissue
+#
+tissuecells$sample<- rownames(tissuecells)
+tissuecells <- separate(tissuecells, col = 'sample', into = c('Gene','type'),
+                             sep = '__')
+
+tissuecells <- subset(tissuecells, subset = type == "protein_coding")
+row.names(tissuecells)<-tissuecells$Gene
+tissuecells<-tissuecells[,-c(1537,1538)]
+#
+tissue <- CreateSeuratObject(counts = tissuecells, min.cells = 3, min.features = 100)
+tissue@meta.data$CellName<-rownames(tissue@meta.data)
+tissue@meta.data<-merge(tissue@meta.data,metadataTissue,by="CellName")
+#
+
+tissue <- NormalizeData(object = tissue, normalization.method = "LogNormalize", scale.factor = 10000)
+tissue <- FindVariableFeatures(object = tissue, selection.method = "vst", nfeatures = 2000)
+toLacrimal.gland.tissue0 <- head(x = VariableFeatures(object = tissue), 10)
+plot1 <- VariableFeaturePlot(object = tissue)
+plot2 <- LabelPoints(plot = plot1, points = toLacrimal.gland.tissue0, repel = TRUE)
+CombinePlots(plots = list(plot1, plot2))
+all.genes <- rownames(x = tissue)
+tissue <- ScaleData(object = tissue, features = all.genes)
+tissue <- RunPCA(object = tissue, features = VariableFeatures(object = tissue))
+ElbowPlot(object = tissue)
+tissue <- FindNeighbors(object = tissue, dims = 1:12)
+tissue <- FindClusters(object = tissue, resolution = 0.6)
+tissue <- RunTSNE(object = tissue, dims = 1:12)
+tissue <- RunUMAP(tissue, dims = 1:12)
+tissue@meta.data
+
+pdf("E12 SMG UMAP unsupervised.pdf", width = 3.5, height = 3, useDingbats = F)
+DimPlot(object = tissue, reduction = "umap", pt.size = 1,label = T,label.size = 5, repel = F, group.by = "seurat_clusters") + NoLegend()
+
+#### Identify cluster markers for annotation
+tissue <- SetIdent(tissue, value = "seurat_clusters")
+e12markers <- FindAllMarkers(tissue, only.pos = T,logfc.threshold = 0.25)
+e12markers.top5 <- e12markers %>% group_by(cluster) %>% top_n(5,avg_log2FC)
+write.csv(e12markers, file = "E12 SMG Unsupervised markers (SEURAT).csv")
+
+DotPlot(tissue, features = unique(e12markers.top5$gene), cols = "Spectral", dot.scale = 4,group.by = "seurat_clusters") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic", size = 9), axis.title = element_blank(), axis.text.y = element_text(size = 9)) + NoLegend()
+table(tissue$seurat_clusters)
+pdf("Balloon plot E12 annotation strategy.pdf", useDingbats = F, width = 4,height = 3.2)
+DotPlot(tissue, features = all.marker, dot.scale = 4, dot.min = 0.05, group.by = "seurat_clusters") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic", size = 9), axis.title = element_blank(), axis.text.y = element_text(size = 9)) + NoLegend()
+dev.off()
+
+tissue[["stage"]] <- "E12"
+tissue <- RenameIdents(tissue, '0' = "Mesenchyme",'1' = "Mesenchyme",'2' = "Mesenchyme",'3' = "Mesenchyme",'4' = "Mesenchyme",'5' = "Mesenchyme",'6'="End bud",'7' = "Krt19+ duct", 
+                       '8'= "Nerves", '9' = "Smooth muscle", '10'= "Mesenchyme",'11' = "Erythroid", '12'="Endothelial", '13'="Macrophages")
+Idents(tissue) <- factor(Idents(tissue), levels = sort(levels(Idents(tissue)),decreasing = F))
+DimPlot(tissue)
+tissue[["CellType"]] <- Idents(tissue)
+
+png("LG.UMAP.png", width = 9000, height = 5000, res = 1200)
+DimPlot(tissue, group.by = "CellType", label = T, label.size = 5, pt.size = 0.5, repel = T, cols = colors) + theme(axis.text = element_text(size=15), axis.title = element_blank())+ggtitle("Lacrimal gland tissue")
+dev.off()
+
+
+#Lacrimal.gland.tissue
+Markers <-c(RSC.marker,SG.progenitor.marker)
+
+RSC.marker<- c("LY6A","ANXA1","CLU","SPRR1A","DCLK1","TRPM5")
+SG.progenitor.marker <- c("CD117","ASCL3","TRP63","KRT5","KRT14")
+png("SG progenior 마커(Lacrimal.gland.tissue).png", width = 10000, height = 8000, res = 1200)
+DotPlot(tissue, features = unique(SG.progenitor.marker), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))+
+  labs(title="Gene signature of SG progenitor markers (Lacrimal.gland.tissue)")
+dev.off()
+
+png("RSC마커(Lacrimal.gland.tissue).png", width = 10000, height = 8000, res = 1200)
+DotPlot(tissue, features = unique(RSC.marker), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))+
+  labs(title="Gene signature of RSC markers (Lacrimal gland tissue)")
+dev.off()
+
+png("SG progenior 마커(FeaturePlot).png", width = 10000, height = 8000, res = 1200)
+FeaturePlot(tissue, features = SGprogenitor.marker)
+dev.off()
+
+png("RSC 마커(FeaturePlot).png", width = 10000, height = 8000, res = 1200)
+FeaturePlot(tissue, features = RSC.marker)
+dev.off()
+
+### Generate UMAP plots for Figure
+png("tissueUMAP.png", width = 9000, height = 5000, res = 1200)
+DimPlot(object = tissue, reduction = "umap", pt.size = 0.5,label = T,label.size = 3.5, repel = T, group.by = "CellType") +ggtitle("Lacrimal.gland.tissue epithelium")
+dev.off()
+
+RSC.marker
+plot1 <- FeaturePlot(tissue, features = c("ANXA1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16)) 
+plot2 <- FeaturePlot(tissue, features = c("CLU"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot3 <- FeaturePlot(tissue, features = c("DCLK1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+
+png("Lacrimal.gland.tissue.F6 UMAPS-RSC.marker.png",width = 2000,height = 7000,res = 1200)
+plot_grid(plotlist = list(plot1, plot2, plot3), ncol = 1)
+dev.off()
+
