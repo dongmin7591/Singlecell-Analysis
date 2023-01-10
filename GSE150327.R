@@ -154,9 +154,10 @@ dev.off()
 
 
 e14smg[["stage"]] <- "E14"
-e14smg <- RenameIdents(e14smg, '0' = "Mesenchyme",'1' = "Mesenchyme",'3' = "Mesenchyme",'14' = "Mesenchyme",'8' = "Mesenchyme",
-                       '19' = "Endothelial",'16' = "Nerves",'17'="Macrophages",'18'="Macrophages",'11' = "Erythroid",'15' = "Erythroid", '13'="Glial cells",
-                       '7'= "Krt19+ duct", '6' = "End bud", '5'="End bud", '2'="End bud",'9'="End bud",'4'="End bud",'12'="End bud",'10'="Basal duct")
+
+e14smg <- RenameIdents(e14smg, '0' = "Mesenchyme",'1' = "Mesenchyme",'3' = "End bud",'14' = "Macrophages",
+                       '8' = "Basal duct", '16' = "Nerves",'17'="Endothelial",'11' = "End bud",'15' = "Erythroid", '13'="Mesenchyme",
+                       '7'= "Mesenchyme", '6' = "End bud", '5'="End bud", '2'="Mesenchyme",'9'="Krt19+ duct",'4'="End bud",'12'="Glial cells",'10'="Erythroid")
 Idents(e14smg) <- factor(Idents(e14smg), levels = sort(levels(Idents(e14smg)),decreasing = F))
 DimPlot(e14smg)
 e14smg[["CellType"]] <- Idents(e14smg)
@@ -174,7 +175,8 @@ write.csv(e14.cell.markers, file = "e14 SMG Cell Type markers (SEURAT).csv")
 DotPlot(e14smg, features = unique(e14.cell.markers.top5$gene), cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))
 
 saveRDS(e14smg, file = "E14 SMG Annotated (SEURAT v3).rds")
-
+e14smg<-readRDS(file = "E14 SMG Annotated (SEURAT v3).rds")
+table(e14smg$CellType)
 #############################################################################################
 ########################## ANALYSIS OF E16 EPITHELIUM #######################################
 #############################################################################################
@@ -217,9 +219,9 @@ DotPlot(e16smg, features = c("Epcam", "Krt14", "Krt5", "Sox9", "Krt19", "Acta2",
 dev.off()
 
 e16smg[["stage"]] <- "E16"
-e16smg <- RenameIdents(e16smg, '0' = "Mesenchyme",'1' = "Mesenchyme",'2' = "Mesenchyme",'3' = "Mesenchyme",'6' = "Mesenchyme",'8' = "Mesenchyme",'15' = "Mesenchyme",'16' = "Mesenchyme",
-                       '12' = "Erythroid", '11'="Macrophages",'18'="Macrophages", '21' = "Nerves", '20'="Glial cells", '19' = "Mast cells", '17'="Smooth muscle", '14'="Basal duct", '13'="Krt19+ duct",
-                       '10'= "Endothelial", '9' = "Myoepithelial", '5'="Erythroid", '4'="End bud",'7'="Erythroid")
+e16smg <- RenameIdents(e16smg, '0' = "Mesenchyme",'1' = "Mesenchyme",'2' = "Mesenchyme",'3' = "Erythroid",'6' = "Mesenchyme",'8' = "Myoepithelial",'15' = "Mesenchyme",'16' = "Smooth muscle",
+                       '12' = "Erythroid", '11'="Macrophages",'18'="Mesenchyme", '21' = "Nerves", '20'="Glial cells", '19' = "Mast cells", '17'="Macrophages", '14'="Basal duct", '13'="Krt19+ duct",
+                       '10'= "Endothelial", '9' = "Erythroid", '5'="End bud", '4'="Mesenchyme",'7'="Mesenchyme")
 Idents(e16smg) <- factor(Idents(e16smg), levels = sort(levels(Idents(e16smg)),decreasing = F))
 DimPlot(e16smg)
 e16smg[["CellType"]] <- Idents(e16smg)
@@ -237,11 +239,11 @@ write.csv(e16.cell.markers, file = "e16 SMG Cell Type markers (SEURAT).csv")
 DotPlot(e16smg, features = unique(e16.cell.markers.top5$gene), cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))
 
 saveRDS(e16smg, file = "E16 SMG Annotated (SEURAT v3).rds")
-
+e16smg<-readRDS(file = "E16 SMG Annotated (SEURAT v3).rds")
+table(e16smg@meta.data$CellType)
 #############################################################################################
 ########################## ANALYSIS OF p1 EPITHELIUM #######################################
 #############################################################################################
-
 p1smg <- CreateSeuratObject(counts = p1smg.data, min.cells = 3, min.features = 200)
 p1smg[["percent.mt"]] <- PercentageFeatureSet(object = p1smg, pattern = "^mt-")
 VlnPlot(object = p1smg, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
@@ -280,9 +282,9 @@ DotPlot(p1smg, features = c("Epcam", "Smgc", "Aqp5", "Bhlha15", "Krt19", "Klk1",
 dev.off()
 
 p1smg[["stage"]] <- "P1"
-p1smg <- RenameIdents(p1smg, '0' = "Bpifa2+ Proacinar",'9' = "Bpifa2+ Proacinar",'10' = "Bpifa2+ Proacinar",'1' = "Smgc+ Proacinar", '2' = "Smgc+ Proacinar",'3' = "Smgc+ Proacinar",
-                      '17'= "Endothelial", '5'="Krt19+ duct", '6' = "Smgc+ Proacinar", '7' = "Basal duct", '8'= "Mitotic cells", '11' = "Bpifa2+ Proacinar", '12'="Krt19+ duct",
-                      '15' = "Basal duct", '14' = "Myoepithelial", '16'="Macrophages", '4' = "Mesenchyme", '13'="Mesenchyme", '18' ="Erythroid")
+p1smg <- RenameIdents(p1smg, '0' = "Smgc+ Proacinar",'9' = "Mitotic cells",'10' = "Bpifa2+ Proacinar4",'1' = "Smgc+ Proacinar", '2' = "Smgc+ Proacinar",'3' = "Mesenchyme",
+                      '17'= "Endothelial", '5'="Krt19+ duct", '6' = "Bpifa2+ Proacinar4", '7' = "Smgc+ Proacinar", '8'= "Basal duct", '11' = "Bpifa2+ Proacinar4", '12'="Krt19+ duct",
+                      '15' = "Basal duct", '14' = "Myoepithelial", '16'="Macrophages", '4' = "Bpifa2+ Proacinar4", '13'="Mesenchyme", '18' ="Erythroid")
 Idents(p1smg) <- factor(Idents(p1smg), levels = sort(levels(Idents(p1smg)),decreasing = F))
 DimPlot(p1smg)
 p1smg[["CellType"]] <- Idents(p1smg)
@@ -300,6 +302,9 @@ write.csv(p1.cell.markers, file = "P1 SMG Cell Type markers (SEURAT).csv")
 DotPlot(p1smg, features = unique(p1.cell.markers.top5$gene), cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))
 
 saveRDS(p1smg, file = "P1 SMG Annotated (SEURAT v3).rds")
+p1smg<-readRDS(file = "P1 SMG Annotated (SEURAT v3).rds")
+save.image(file = "./GSE150327.RData")
+table(p1smg@meta.data$CellType)
 
 
 #################################################################################################
@@ -360,9 +365,9 @@ smgP.integrated <- RenameIdents(smgP.integrated, '0' = "Smgc+", '1' = "Acinar", 
                                 '12'="Ascl3+ duct", '13'="NK cells", '14'="Macrophages", '15'="Erythroid",
                                 '16'="Bpifa2+", '17'="Basal duct")
 write.csv(smgP.integrated.int.markers, file = "P30_Adult SMG unsupervised markers.csv")
-
 DefaultAssay(smgP.integrated) <- "RNA"
-
+smgP.integrated[["CellType"]] <- Idents(smgP.integrated)
+table(smgP.integrated@meta.data$CellType)
 #a small population of stromal cells was identified clustered together with myoepithelial cells
 # they are manually separated based on expression of known stromal markers 
 stromalcells <- WhichCells(smgP.integrated, expression = Vim>0&Col3a1>0, slot = "counts") # select Stromal cells based on expression of Collagen and Vimentin
@@ -389,6 +394,7 @@ smgP.integratedcounts2 <- as.data.frame(table(smgP.integrated$celltype.stage.sex
 write.csv(smgP.integratedcounts2, file = "Number of cells per cluster in P30 and Adults.csv")
 
 saveRDS(smgP.integrated, file = "P30_adult integrated Annotated (SEURAT v3).rds")
+smgP.integrated<-readRDS("/home/dongmin/R projects/Singlecell-Analysis/GSE150327/P30_adult integrated Annotated (SEURAT v3).rds")
 
 
 ### Separate P30 from adults for visualization and to generate list of defining genes
@@ -410,6 +416,7 @@ FeaturePlot(p30subset, features = "Smgc", split.by = "sex", ncol = 1, min.cutoff
 dev.off()
 p30subset[["CellType.sex"]] <- paste0(p30subset@meta.data$CellType, "_", p30subset@meta.data$sex)
 saveRDS(p30subset, "P30_Male_and_female combined - annotated (split from integrated).rds")
+p30subset<-readRDS("P30_Male_and_female combined - annotated (split from integrated).rds")
 
 p30subset <- SetIdent(p30subset, value="CellType")
 p30.cell.markers <- FindAllMarkers(p30subset, only.pos = T,logfc.threshold = 0.25, max.cells.per.ident = 500)
@@ -495,7 +502,7 @@ for (i in 1:length(smg.e.integrated.list)) {
 integrated.anchors <- FindIntegrationAnchors(smg.e.integrated.list, dims = 1:30)
 smg.e.integrated <- IntegrateData(integrated.anchors, dims = 1:30)
 
-remove(smg.e.integrated.list, integrated.anchors) #remove to save memory
+ remove(smg.e.integrated.list, integrated.anchors) #remove to save memory
 
 # Run the standard workflow for visualization and clustering
 smg.e.integrated <- ScaleData(smg.e.integrated, verbose = FALSE)
@@ -597,6 +604,7 @@ write.csv(smg.p.integratedcounts, file = "Postnatal cell counts.csv")
 
 saveRDS(smg.p.integrated, file = "Postnatal SMG Integrated (P1-Adult).rds")
 
+
 ## subset and export epithelial clusters for downstream analysis
 e.epithelium <- subset(smg.e.integrated, idents = c("Basal duct", "End bud", "Krt19+ duct", "Myoepithelial"))
 
@@ -633,3 +641,6 @@ dev.off()
 pdf("Epcam Plots3.pdf", useDingbats = F, width = 3, height = 2.5)
 FeaturePlot(e12smg, features="Epcam", cols = c("bisque", "green4"), min.cutoff = "q20", max.cutoff = "q80") + theme(axis.text = element_blank(), axis.title = element_blank(), plot.title = element_text(face = "italic", vjust = -5, hjust = 0.05, size=8))
 dev.off()
+
+
+save.image(file = "./GSE150327.RData")
