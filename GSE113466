@@ -1,0 +1,118 @@
+#GSE113466
+setwd("/home/dongmin/R projects/Singlecell-Analysis/GSE113466")
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("org.Mm.eg.db")
+
+library(org.Mm.eg.db)
+library(clusterProfiler)
+keytypes(org.Mm.eg.db)
+
+MP9SG<-read.csv(file = "./SMG.P8.filtMatrix.csv")
+row.names(MP9SG)<-MP9SG$Ens
+MP9SG<-MP9SG[-1]
+
+row.names(MP9SG)[10]
+
+eg = bitr(rownames(MP9SG), fromType="ENSEMBL", toType="SYMBOL", OrgDb="org.Mm.eg.db") #39.39%
+
+MP9SG@meta.data
+MP9SG$ENSEMBL<-rownames(MP9SG)
+MP9SG_merge <- merge(MP9SG,eg, by='ENSEMBL')
+MP9SG_merge<- MP9SG_merge[,-1]
+MP9SG_merge<-aggregate(. ~ SYMBOL, data = MP9SG_merge, mean) #56602->34429
+rownames(MP9SG_merge) <- MP9SG_merge$SYMBOL
+MP9SG_merge<- MP9SG_merge[,-1]
+
+
+#Creating Seurat Object
+MP9SG<-CreateSeuratObject(counts = MP9SG_merge, min.cells = 3, min.features = 200)
+
+MP9SG[["percent.mt"]] <- PercentageFeatureSet(object = MP9SG, pattern = "^mt-")
+VlnPlot(object = MP9SG, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+plot1 <- FeatureScatter(object = MP9SG, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(object = MP9SG, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+CombinePlots(plots = list(plot1, plot2))
+MP9SG <- subset(x = MP9SG, subset = nFeature_RNA > 200 & nFeature_RNA < 6500 & percent.mt < 5)
+MP9SG <- NormalizeData(object = MP9SG, normalization.method = "LogNormalize", scale.factor = 10000)
+MP9SG <- FindVariableFeatures(object = MP9SG, selection.method = "vst", nfeatures = 2000)
+top10 <- head(x = VariableFeatures(object = MP9SG), 10)
+plot1 <- VariableFeaturePlot(object = MP9SG)
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+CombinePlots(plots = list(plot1, plot2))
+all.genes <- rownames(x = MP9SG)
+MP9SG <- ScaleData(object = MP9SG, features = all.genes)
+MP9SG <- RunPCA(object = MP9SG, features = VariableFeatures(object = MP9SG))
+ElbowPlot(object = MP9SG)
+MP9SG <- FindNeighbors(object = MP9SG, dims = 1:16)
+MP9SG <- FindClusters(object = MP9SG, resolution = 0.8)
+MP9SG <- RunTSNE(object = MP9SG, dims = 1:16)
+MP9SG <- RunUMAP(MP9SG, dims = 1:16)
+
+png("UMAP unsupervised.png", width = 9000, height = 5000, res=1200)
+DimPlot(object = MP9SG, reduction = "umap", pt.size = 1,label = T,label.size = 5, repel = F, group.by = "seurat_clusters") + ggtitle("Salivary Gland")
+dev.off()
+MP9SG.rm5 <- subset(MP9SG, idents = c("0", "1", "2", "3", 
+                                                    "4", "6", "7", 
+                                                    "8", "9", "10"))
+Acinar<-c("Bhlha15", "Aqp5")
+Ductal <-c("Krt7", "Krt8" ,"krt18")
+Myoepithelial<- c("Acta2", "Myh11", "Myl9")
+Basal<- c("Trp63", "Krt5", "Krt14")
+RSC<-c("Ly6a", "Anxa1", "Clu", "Sprr1a", "Dclk1", "Trpm5")
+
+All.markers<-c(Acinar,Ductal,Myoepithelial,Basal)
+#### Identify cluster markers for annotation
+MP9SG <- SetIdent(MP9SG, value = "seurat_clusters")
+MP9SG.markers <- FindAllMarkers(MP9SG, only.pos = T,logfc.threshold = 0.25)
+MP9SG.markers.top5 <- MP9SG.markers %>% group_by(cluster) %>% top_n(5,avg_log2FC)
+write.csv(MP9SG.markers, file = "E12 SMG Unsupervised markers (SEURAT).csv")
+
+DotPlot(MP9SG, features = unique(MP9SG.markers.top5$gene), cols = "Spectral", dot.scale = 4,group.by = "seurat_clusters") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic", size = 9), axis.title = element_blank(), axis.text.y = element_text(size = 9)) + NoLegend()
+
+pdf("Balloon plot E12 annotation strategy.pdf", useDingbats = F, width = 4,height = 3.2)
+DotPlot(MP9SG, features = All.markers, dot.scale = 4, dot.min = 0.05, group.by = "seurat_clusters") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic", size = 9), axis.title = element_blank(), axis.text.y = element_text(size = 9)) + NoLegend()
+dev.off()
+
+
+MP9SG <- RenameIdents(MP9SG.rm5, '0' = "Acinar",'1' = "Acinar",'2' = "Ductal",'3' = "Ductal",'4' = "Basal",'6'="Ductal",'7' = "Myoepithelial", 
+                       '8'= "Ductal", '9' = "Ductal", '10'= "Acinar")
+Idents(MP9SG) <- factor(Idents(MP9SG), levels = sort(levels(Idents(MP9SG)),decreasing = F))
+DimPlot(MP9SG)
+MP9SG[["CellType"]] <- Idents(MP9SG)
+
+png("SG.UMAP.png", width = 9000, height = 5000, res = 1200)
+DimPlot(MP9SG, group.by = "CellType", label = T, label.size = 5, pt.size = 0.5, repel = T) + theme(axis.text = element_text(size=14), axis.title = element_blank())+ggtitle("Salivary Gland")
+dev.off()
+
+MP9SG <- SetIdent(MP9SG, value = "CellType")
+e12cellcounts <- as.data.frame(table(Idents(MP9SG)))
+write.csv(e12cellcounts, file = "E12 cell counts.csv")
+e12.cell.markers <- FindAllMarkers(MP9SG, only.pos = T,logfc.threshold = 0.25, max.cells.per.ident = 500)
+e12.cell.markers.top5 <- e12.cell.markers %>% group_by(cluster) %>% top_n(5,avg_log2FC)
+write.csv(e12.cell.markers, file = "E12 SMG Cell Type markers (SEURAT).csv")
+DotPlot(MP9SG, features = unique(e12.cell.markers.top5$gene), cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))
+
+saveRDS(MP9SG, file = "E12 SMG Annotated (SEURAT v3).rds")
+table(MP9SG$CellType)
+
+
+png("RSC(Salivary Gland).png", width = 10000, height = 8000, res = 1200)
+DotPlot(MP9SG, features = unique(RSC), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))+
+  labs(title="Gene signature of RSC markers (Salivary Gland)")
+dev.off()
+
+
+
+RSC
+plot1 <- FeaturePlot(MP9SG, features = c("Ly6a"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16)) 
+plot2 <- FeaturePlot(MP9SG, features = c("Anxa1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot3 <- FeaturePlot(MP9SG, features = c("Clu"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot4 <- FeaturePlot(MP9SG, features = c("Sprr1a"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot5 <- FeaturePlot(MP9SG, features = c("DCLK1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+
+png("SG.F5 UMAPS-RSC.marker.png",width = 4000,height = 7000,res = 1200)
+plot_grid(plotlist = list(plot1, plot2, plot3,plot4,plot5), ncol = 2)
+dev.off()
