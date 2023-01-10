@@ -1,0 +1,181 @@
+#Slide1
+# P1, P30, adults 분석 결과에서 RSC 마커 gene signature
+
+
+#1. Uudefined_Mitotic 위치
+table(p1smg@meta.data$CellType)
+p1smg <- RenameIdents(p1smg, 'Bpifa2+ Proacinar4' = "Bpifa2+ Proacinar")
+p1smg[["CellType"]] <- Idents(p1smg)
+table(p1smg@meta.data$CellType)
+png("Slide1_Uudefined_Mitotic.png", width = 9000, height = 5000, res = 1200)
+DimPlot(object = p1.epithelium, reduction = "umap", pt.size = 0.5,label = T,label.size = 3.5, repel = T, group.by = "CellType") 
+dev.off()
+
+#2. Uudefined_Mitotic 마커 genes
+
+png("Uudefined_Mitotic 마커 genes.png", width = 15000, height = 10000, res = 1200)
+DotPlot(p1.epithelium, features = unique(p1.cell.markers.top5$gene), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))
+dev.off()
+
+
+
+
+p1.epithelium <- subset(p1smg, idents = c("Krt19+ duct", "Basal duct", "Myoepithelial", "Bpifa2+ Proacinar", 
+                                                    "Smgc+ Proacinar","Undefined mitotic cells"))
+
+
+p1.epithelium
+
+
+RSC.marker<-c("Ly6a", "Anxa1", "Clu", "Sprr1a", "Dclk1", "Trpm5")
+SGprogenitor.marker<-c("c-kit", "Ascl3", "Trp63", "Krt5", "Krt14")
+
+Markers <-c(RSC.marker,SGprogenitor.marker)
+
+#p1
+
+png("SG progenior 마커(P1).png", width = 10000, height = 8000, res = 1200)
+DotPlot(p1.epithelium, features = unique(SGprogenitor.marker), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))+
+  labs(title="Gene signature of SG progenitor markers (P1)")
+dev.off()
+
+png("RSC마커(P1).png", width = 10000, height = 8000, res = 1200)
+DotPlot(p1.epithelium, features = unique(Markers), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))+
+  labs(title="Gene signature of RSC markers (P1)")
+dev.off()
+       
+png("SG progenior 마커(FeaturePlot).png", width = 10000, height = 8000, res = 1200)
+FeaturePlot(p1.epithelium, features = SGprogenitor.marker)
+dev.off()
+
+png("RSC 마커(FeaturePlot).png", width = 10000, height = 8000, res = 1200)
+FeaturePlot(p1.epithelium, features = RSC.marker)
+dev.off()
+
+### Generate UMAP plots for Figure
+png("p1.epitheliumUMAP.png", width = 9000, height = 5000, res = 1200)
+DimPlot(object = p1.epithelium, reduction = "umap", pt.size = 0.5,label = T,label.size = 3.5, repel = T, group.by = "CellType") +ggtitle("P1 epithelium")
+dev.off()
+
+plot1 <- FeaturePlot(p1.epithelium, features = c("Ly6a"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16)) 
+plot2 <- FeaturePlot(p1.epithelium, features = c("Anxa1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot3 <- FeaturePlot(p1.epithelium, features = c("Clu"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot4 <- FeaturePlot(p1.epithelium, features = c("Sprr1a"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot5 <- FeaturePlot(p1.epithelium, features = c("Dclk1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot6 <- FeaturePlot(p1.epithelium, features = c("Trpm5"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+
+png("P1 - F6 UMAPS-RSC.marker.png",width = 4000,height = 7000,res = 1200)
+plot_grid(plotlist = list(plot1, plot2, plot3, plot4, plot5,plot6), ncol = 2)
+dev.off()
+
+
+plot1 <- FeaturePlot(p1.epithelium, features = c("Ascl3"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16)) 
+plot2 <- FeaturePlot(p1.epithelium, features = c("Trp63"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot3 <- FeaturePlot(p1.epithelium, features = c("Krt5"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot4 <- FeaturePlot(p1.epithelium, features = c("Krt14"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+
+png("P1 - F6 UMAPS-SGprogenitor.marker.png",width = 2000,height = 9000,res = 1200)
+plot_grid(plotlist = list(plot1, plot2, plot3, plot4), ncol = 1)
+dev.off()
+
+
+
+#P30
+split.P30.Adult<-SplitObject(smgP.integrated.epithelium,split.by = "stage")
+
+
+P30.epithelium<-split.P30.Adult[[1]]
+table(P30.epithelium@meta.data$CellType)
+
+P30.epithelium <- subset(P30.epithelium, idents = c("Basal duct", "Myoepithelial","Smgc+","Acinar",
+                                                                 "Intercalated duct","Ascl3+ duct","Striated duct","GCT"))
+
+png("P30.epitheliumUMAP.png", width = 9000, height = 5000, res = 1200)
+DimPlot(object = P30.epithelium, reduction = "umap", pt.size = 0.5,label = T,label.size = 3.5, repel = T, group.by = "CellType") +ggtitle("P30 epithelium")
+dev.off()
+
+png("SG progenior 마커(P30).png", width = 10000, height = 8000, res = 1200)
+DotPlot(P30.epithelium, features = unique(SGprogenitor.marker), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))+
+  labs(title="Gene signature of SG progenitor markers (P30)")
+dev.off()
+
+png("RSC마커(P30).png", width = 10000, height = 8000, res = 1200)
+DotPlot(P30.epithelium, features = unique(RSC.marker), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))+
+  labs(title="Gene signature of RSC markers (P30)")
+dev.off()
+
+plot1 <- FeaturePlot(P30.epithelium, features = c("Ly6a"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16)) 
+plot2 <- FeaturePlot(P30.epithelium, features = c("Anxa1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot3 <- FeaturePlot(P30.epithelium, features = c("Clu"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot4 <- FeaturePlot(P30.epithelium, features = c("Sprr1a"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot5 <- FeaturePlot(P30.epithelium, features = c("Dclk1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+
+png("P30 - F6 UMAPS-RSC.marker.png",width = 4000,height = 7000,res = 1200)
+plot_grid(plotlist = list(plot1, plot2, plot3, plot4, plot5), ncol = 2)
+dev.off()
+
+
+plot1 <- FeaturePlot(P30.epithelium, features = c("Ascl3"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16)) 
+plot2 <- FeaturePlot(P30.epithelium, features = c("Trp63"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot3 <- FeaturePlot(P30.epithelium, features = c("Krt5"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot4 <- FeaturePlot(P30.epithelium, features = c("Krt14"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+
+png("P30 - F6 UMAPS-SGprogenitor.marker.png",width = 2000,height = 9000,res = 1200)
+plot_grid(plotlist = list(plot1, plot2, plot3, plot4), ncol = 1)
+dev.off()
+
+#Adult
+
+
+Adult.epithelium<-split.P30.Adult[[2]]
+table(Adult.epithelium@meta.data$CellType)
+
+Adult.epithelium <- subset(Adult.epithelium, idents = c("Basal duct", "Myoepithelial","Bpifa2+","Smgc+","Acinar",
+                                                        "Intercalated duct","Ascl3+ duct","Striated duct","GCT"))
+Adult.epithelium[["CellType"]]<-Idents(Adult.epithelium) 
+
+png("Adult.epitheliumUMAP.png", width = 9000, height = 5000, res = 1200)
+DimPlot(object = Adult.epithelium, reduction = "umap", pt.size = 0.5,label = T,label.size = 3.5, repel = T, group.by = "CellType") +ggtitle("Adult epithelium")
+dev.off()
+
+png("SG progenior 마커(Adult).png", width = 10000, height = 8000, res = 1200)
+DotPlot(Adult.epithelium, features = unique(SGprogenitor.marker), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))+
+  labs(title="Gene signature of SG progenitor markers (Adult)")
+dev.off()
+
+png("RSC마커(Adult).png", width = 10000, height = 8000, res = 1200)
+DotPlot(Adult.epithelium, features = unique(RSC.marker), 
+        cols = "Spectral", dot.scale = 6,group.by = "CellType") +theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0))+
+  labs(title="Gene signature of RSC markers (Adult)")
+dev.off()
+
+plot1 <- FeaturePlot(Adult.epithelium, features = c("Ly6a"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16)) 
+plot2 <- FeaturePlot(Adult.epithelium, features = c("Anxa1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot3 <- FeaturePlot(Adult.epithelium, features = c("Clu"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot4 <- FeaturePlot(Adult.epithelium, features = c("Sprr1a"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot5 <- FeaturePlot(Adult.epithelium, features = c("Dclk1"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot6 <- FeaturePlot(Adult.epithelium, features = c("Trpm5"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+
+png("Adult - F6 UMAPS-RSC.marker.png",width = 4000,height = 7000,res = 1200)
+plot_grid(plotlist = list(plot1, plot2, plot3, plot4, plot5), ncol = 2)
+dev.off()
+
+
+plot1 <- FeaturePlot(Adult.epithelium, features = c("Ascl3"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16)) 
+plot2 <- FeaturePlot(Adult.epithelium, features = c("Trp63"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot3 <- FeaturePlot(Adult.epithelium, features = c("Krt5"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot4 <- FeaturePlot(Adult.epithelium, features = c("Krt14"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+plot5 <- FeaturePlot(Adult.epithelium, features = c("C-kit"), pt.size = 0.5,min.cutoff = "q10", max.cutoff = "q90") + NoLegend() +NoAxes() + theme(title = element_blank(), panel.border = element_rect(size = 0.5,colour = "black"), plot.margin=unit(c(-18,3,0,0),units = "pt"), plot.title = element_text(face = "italic", hjust = 0.02, vjust = -8, size = 16))
+
+png("Adult - F6 UMAPS-SGprogenitor.marker.png",width = 2000,height = 9000,res = 1200)
+plot_grid(plotlist = list(plot1, plot2, plot3, plot4), ncol = 1)
+dev.off()
+
+
+
